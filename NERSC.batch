@@ -1,12 +1,12 @@
 #!/bin/bash -l
-#SBATCH -p debug
+#SBATCH -p regular
 #SBATCH -N 6
-#SBATCH -t 00:30:00
+#SBATCH -t 01:00:00
 #SBATCH -J CMBlensingcori
+#SBATCH --constraint=haswell
 
 source $HOME/.bashrc.ext
 
-cd $SLURM_SUBMIT_DIR
 
 main_script=covariances.py
 
@@ -30,4 +30,14 @@ fi
 
 ## Make sure you have python-mpi, optimized for parallel computing at NERSC
 ## Launch script with sbatch
-time srun -n 192 python-mpi ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode $runmode --mpi
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N1 --mpi
+wait
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N0 --mpi
+wait
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_CMBxCMB --mpi
+wait
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode trispB --mpi
+wait
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixCMB --mpi
+wait
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixphi --mpi

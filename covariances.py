@@ -12,13 +12,13 @@ import os
 import glob
 import argparse
 
-import lib_covariances
-import lib_spectra
-import misc 
-import util
+from lenscov.src import lib_covariances
+from lenscov.src import lib_spectra
+from lenscov.src import misc 
+from lenscov.src import util
 
 ## Define
-DEBUG = False
+DEBUG = True
 
 def addargs(parser):
 	''' Parse command line arguments '''

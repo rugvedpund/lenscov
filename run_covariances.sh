@@ -28,15 +28,15 @@ elif [ "$1" == "mpi" ]
 	then
 	time python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N1 --mpi
 	wait
-	time mpirun -np $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N0 --mpi
+	time srun -c $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N0 --mpi
 	wait
-	time mpirun -np $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_CMBxCMB --mpi
+	time srun -c $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_CMBxCMB --mpi
 	wait
-	time mpirun -np $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode trispB --mpi
+	time srun -c $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode trispB --mpi
 	wait
-	time mpirun -np $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixCMB --mpi
+	time srun -c $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixCMB --mpi
 	wait
-	time mpirun -np $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixphi --mpi
+	time srun -c $2 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixphi --mpi
 else
 	echo 'In order to run the script, just execute ./run_covariances.sh <option>'
 	echo '<option> can be: recompile, help, or mpi #proc'
