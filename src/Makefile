@@ -4,9 +4,8 @@ ifeq (${NERSC_HOST}, edison)
 	FPY = f2py
 	OPT = --opt=-O3 -lgfortran -lifcore
 else ifeq (${NERSC_HOST}, cori)
-	FF = ifort
-	FF = gfortran
-	FPY = f2py
+	FF = ftn
+	FPY = f2py2.7
 	OPT = --opt=-O3
 else
 	FF = gfortran

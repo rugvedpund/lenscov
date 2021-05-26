@@ -909,7 +909,7 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 		data_trispB = []
 		names_trispB = []
 		for fn in fns_trispB:
-			dataB, junk = np.load(fn)['data']
+			dataB, junk = np.load(fn,allow_pickle=True)['data']
 			data_trispB.append(dataB)
 			name_trispB = fn.split('.')[0][-4:]
 			names_trispB.append(name_trispB)
