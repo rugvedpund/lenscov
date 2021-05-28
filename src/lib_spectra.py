@@ -8,9 +8,9 @@
 import glob, copy, sys, os
 import numpy as np
 
-import lib_covariances
-from loop_lensing import loop_lensing
-from util import binner, split_block_n0
+from . import lib_covariances
+from .loop_lensing import loop_lensing
+from .util import binner, split_block_n0
 
 from matplotlib import cm, gridspec
 from scipy import interpolate
@@ -70,15 +70,15 @@ def add_noise_to_cl(cl,noise_uK_arcmin,fwhm_arcmin,lmax,spec='',TTcutoff=False,T
 	"""
 	assert len(cl) == lmax+1
 	if spec == '':
-		print 'you need to specify a spec for noise'
+		print('you need to specify a spec for noise')
 		sys.exit()
 	if spec == 'cltt':
 		if TTcutoff:
 			## Trick to throw away all contributions for ell>3000
-			print 'You apply a cutoff at ell_cut=3000'
+			print('You apply a cutoff at ell_cut=3000')
 			return cl + nl(noise_uK_arcmin, fwhm_arcmin, lmax) + nl(1.e-6, 15, lmax)
 		elif TTcorr:
-			print 'You load 1/f noise for %s'%spec
+			print('You load 1/f noise for %s'%spec)
 			return cl + nlcorr(noise_uK_arcmin, fwhm_arcmin, lmax, TTcorr=TTcorr)
 		else:
 			return cl + nl(noise_uK_arcmin, fwhm_arcmin, lmax)
@@ -218,7 +218,7 @@ def compute_N0_XYWZ(cls_lensed,lmin=2,blocks=['TTTT'],noise_uK_arcmin=0.0,TTcorr
 	for position_block,block in enumerate(blocks):
 		flavor1, flavor2,flavor_n0 = split_block_n0(block)
 
-		if rank == 0: print 'Doing block %s (%s, %s, %s)\n'%(block,flavor1,flavor2, flavor_n0)
+		if rank == 0: print('Doing block %s (%s, %s, %s)\n'%(block,flavor1,flavor2, flavor_n0))
 
 		## Load the weights and spin values used in N0 computation
 		cl_XX, cl_YY, cl_XY = load_weights(cls_lensed, flavor1, noise_uK_arcmin, fwhm_arcmin, 2*lmax, extra='_long',TTcorr=TTcorr)
@@ -240,7 +240,7 @@ def compute_N0_XYWZ(cls_lensed,lmin=2,blocks=['TTTT'],noise_uK_arcmin=0.0,TTcorr
 			spinl2_x, spinl3_x, spinl2_y, spinl3_y = load_spin_values_wigner('cleb')
 
 		if comm is None:
-			l2range = range(lmin, lmax+1, 1)
+			l2range = list(range(lmin, lmax+1, 1))
 			l2dim = lmax - lmin
 
 			## /!\ compute_bias_zero_xyxy_mpi just returns sum(g_ell f_ell)
@@ -248,7 +248,7 @@ def compute_N0_XYWZ(cls_lensed,lmin=2,blocks=['TTTT'],noise_uK_arcmin=0.0,TTcorr
 			N0_tot[position_block] = (2*cls_lensed.ls + 1.0)/tmp
 		else:
 			n_tot = comm.size
-			l2range = range(lmin+rank,lmax+1,n_tot)
+			l2range = list(range(lmin+rank,lmax+1,n_tot))
 			l2dim = len(l2range)-1
 
 			## /!\ compute_bias_zero_xyxy_mpi returns sum(g_ell f_ell)
@@ -260,6 +260,7 @@ def compute_N0_XYWZ(cls_lensed,lmin=2,blocks=['TTTT'],noise_uK_arcmin=0.0,TTcorr
 				if block == 'TTEE':
 					index_TT = blocks.index('TTTT')
 					index_EE = blocks.index('EEEE')
+					print(N0_tot[index_TT] * N0_tot[index_EE] / (2*cls_lensed.ls + 1.0) * N0_tot[position_block])                    
 					N0_tot[position_block] = N0_tot[index_TT] * N0_tot[index_EE] / (2*cls_lensed.ls + 1.0) * N0_tot[position_block]
 				elif block == 'TTTE':
 					index_TT = blocks.index('TTTT')
@@ -312,8 +313,8 @@ def compute_minimum_variance_weights(N0_array,N0_names,checkit=False):
 	weights = np.array([ [np.sum(submat[i]) for submat in inv_submat_array] for i in range(6) ])
 
 	if checkit:
-		print np.sum(weights*minimum_variance_n0)/len(minimum_variance_n0) == 1.
-		print np.sum(weights*minimum_variance_n0)/len(minimum_variance_n0)
+		print(np.sum(weights*minimum_variance_n0)/len(minimum_variance_n0) == 1.)
+		print(np.sum(weights*minimum_variance_n0)/len(minimum_variance_n0))
 
 	return minimum_variance_n0, weights*minimum_variance_n0, N0_names_ordered
 
@@ -500,10 +501,10 @@ class camb_clfile(object):
 
 		## interpolate values beyond 10000
 		if 3*lmax > 10000:
-			print 'Interpolate high ell values for spectra'
+			print('Interpolate high ell values for spectra')
 			lmax_file = tarray[-1, 0]
 			tarray_tmp = np.zeros((ncol,lmax_file-lmin+1))
-			full_lrange = range(int(lmin),int(lmax_file+1))
+			full_lrange = list(range(int(lmin),int(lmax_file+1)))
 			tarray = tarray.T ## transpose to ease the computation
 			for i in range(ncol):
 				tarray_tmp[i] = np.interp(full_lrange, tarray[0],tarray[i])
@@ -588,13 +589,13 @@ class camb_clfile(object):
 			ret	  = copy.deepcopy(self)
 			ret.lmax = lmax
 			ret.ls   = np.arange(0, lmax+1)
-			for k, v in self.__dict__.items():
+			for k, v in list(self.__dict__.items()):
 				if k[0:2] == 'cl':
 					setattr( ret, k, copy.deepcopy(v[0:lmax+1]) )
 
 			if lmin != None:
 				assert( lmin <= lmax )
-				for k in self.__dict__.keys():
+				for k in list(self.__dict__.keys()):
 					if k[0:2] == 'cl':
 						getattr( ret, k )[0:lmin] = 0.0
 			return ret
@@ -629,7 +630,7 @@ class camb_clfile(object):
 	def __eq__(self, other):
 		""" compare two clfile objects. """
 		try:
-			for key in self.__dict__.keys()+other.__dict__.keys():
+			for key in list(self.__dict__.keys())+list(other.__dict__.keys()):
 				if type(self.__dict__[key]) == np.ndarray:
 					assert( np.all( self.__dict__[key] == other.__dict__[key] ) )
 				else:
@@ -683,7 +684,7 @@ def analytic_lensed_spectra_XX_fortran(cls_unlensed,lmin=2,flavor='cltt',MPI=Non
 			cls_unlensed.clbb
 		except:
 			if rank==0:
-				print 'Assume no scalar B-modes'
+				print('Assume no scalar B-modes')
 			cls_unlensed.clbb=np.zeros_like(cls_unlensed.clee)
 			cls_unlensed.clbb_long=np.zeros_like(cls_unlensed.clee_long)
 
@@ -707,7 +708,7 @@ def analytic_lensed_spectra_XX_fortran(cls_unlensed,lmin=2,flavor='cltt',MPI=Non
 		try:
 			cls_unlensed.clbb
 		except:
-			print 'Assume no scalar B-modes'
+			print('Assume no scalar B-modes')
 			cls_unlensed.clbb_long=np.zeros_like(cls_unlensed.clee_long)
 			cls_unlensed.clbb=np.zeros_like(cls_unlensed.clee)
 
@@ -723,7 +724,7 @@ def analytic_lensed_spectra_XX_fortran(cls_unlensed,lmin=2,flavor='cltt',MPI=Non
 	C_l1_analytic_part2_tot = np.zeros_like(C_l1_analytic_part1)
 
 	if comm is None:
-		l2range = range(lmin, lmax+1, 1)
+		l2range = list(range(lmin, lmax+1, 1))
 		l2dim = lmax - lmin
 		if flavor != 'clte':
 			C_l1_analytic_part2=loop_lensing.compute_lensed_spectra_mpi(cl,clpp,l2range,flavor,lmin,spinl2,spinl3,l2dim,lmax)
@@ -732,7 +733,7 @@ def analytic_lensed_spectra_XX_fortran(cls_unlensed,lmin=2,flavor='cltt',MPI=Non
 		return C_l1_analytic_part1 , C_l1_analytic_part2
 	else:
 		n_tot = comm.size
-		l2range = range(lmin+rank,lmax+1,n_tot)
+		l2range = list(range(lmin+rank,lmax+1,n_tot))
 		l2dim = len(l2range)-1
 		if flavor != 'clte':
 			C_l1_analytic_part2=loop_lensing.compute_lensed_spectra_mpi(cl,clpp,l2range,flavor,lmin,spinl2,spinl3,l2dim,lmax)

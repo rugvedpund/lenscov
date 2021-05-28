@@ -5,8 +5,7 @@
 #SBATCH -J CMBlensingcori
 #SBATCH --constraint=haswell
 
-source $HOME/.bashrc.ext
-
+conda activate fisher
 
 main_script=covariances.py
 
@@ -15,10 +14,10 @@ unlensed_file=additional_files/planck_lensing_wp_highL_bestFit_20130627_lenspote
 lensed_file=additional_files/planck_lensing_wp_highL_bestFit_20130627_lensedCls.dat
 
 ## Runmode: What do you want to compute?
-runmode=covariances_CMBxCMB
+runmode=all
 
 ## Choice between Planck, Core++, CMB-S4, and Ideal
-exp=CMB-S4
+exp=_test_
 
 if [ "${runmode}" == "N1" ];
 	then
@@ -30,14 +29,15 @@ fi
 
 ## Make sure you have python-mpi, optimized for parallel computing at NERSC
 ## Launch script with sbatch
-time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N1 --mpi
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N1
 wait
-time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N0 --mpi
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N0
 wait
-time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_CMBxCMB --mpi
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_CMBxCMB
 wait
-time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode trispB --mpi
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode trispB
 wait
-time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixCMB --mpi
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixCMB
 wait
-time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixphi --mpi
+time srun -n 192 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixphi
+wait

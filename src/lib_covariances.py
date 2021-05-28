@@ -8,12 +8,12 @@
 import numpy as np
 import sys, copy, os, glob
 
-from weave import inline, converters
+#from weave import inline, converters
 from scipy import interpolate
 
-from loop_lensing import loop_lensing
-from correlation_functions import correlation_functions
-import lib_spectra, util
+from .loop_lensing import loop_lensing
+from .correlation_functions import correlation_functions
+from . import lib_spectra, util
 
 ########################################################################
 # Spit out combinations X,Y,Z,W,U,V for different terms
@@ -166,7 +166,7 @@ def gaussian_variance(cl11,cl22=None,cl12=None,ells=[],nzcount=None):
 
 	if cl22 is None and cl12 is None:
 		# print 'Gaussian variance for auto-spectrum'
-		gauss_var = np.array( [2.0*cl11[i]**2 / (2.0*i + 1.0) for i in ells] ,dtype=float)
+		gauss_var = np.array( [2.0*cl11[i]**2 / (2.0*i + 1.0) for i in ells] )
 	else:
 		# print 'Gaussian variance for cross-spectrum'
 		gauss_var = np.array( [(cl11[i]*cl22[i] + cl12[i]**2) / (2.0*i + 1.0) for i in ells] ,dtype=float)
@@ -224,7 +224,7 @@ def precompute_trispB(cls_unlensed,cls_lensed,combination='TTTT',lmin=2,noise_uK
 	lmax = int(cls_unlensed.lmax)
 
 	trispB_tot = np.zeros((lmax+1,lmax+1))
-	l2range = range(lmin+rank,lmax+1,n_tot)
+	l2range = list(range(lmin+rank,lmax+1,n_tot))
 	l2dim = len(l2range)-1
 
 	flavor1 = combination[0:2].lower()
@@ -357,7 +357,7 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 			## There is no Gaussian variance contribution for those terms
 			continue
 
-		if rank==0: print 'Gaussian Variance: doing block %s (%s)\n'%(block,flavor)
+		if rank==0: print('Gaussian Variance: doing block %s (%s)\n'%(block,flavor))
 
 		## Load weights (lensed spectra, and their noisy version)
 		if block in ['TETE', 'TTTE', 'EETE']:
@@ -391,7 +391,7 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 			continue
 		cov_order1 = covmat(0,lmax)
 
-		if rank==0: print 'Order O(clpp): doing block %s (%s)\n'%(block,flavor)
+		if rank==0: print('Order O(clpp): doing block %s (%s)\n'%(block,flavor))
 
 		## Load spins
 		spinl2_x, spinl3_x, spinl2_y, spinl3_y = lib_spectra.load_spin_values_wigner('clte')
@@ -409,7 +409,7 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 
 		## Define range of ells, and distribute over procs.
 		n_tot = comm.size
-		l2range = range(lmin+rank,lmax+1,n_tot)
+		l2range = list(range(lmin+rank,lmax+1,n_tot))
 		l2dim = len(l2range)-1
 
 		## Compute this term
@@ -437,10 +437,10 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 	else:
 		for position_block,block in enumerate(names_dCMB_over_dcpp_tot):
 			flavor = 'cl%s%s'%(block[0].lower(),block[1].lower())
-			if rank==0: print 'Pre-compute derivatives for block %s (%s)\n'%(block,flavor)
+			if rank==0: print('Pre-compute derivatives for block %s (%s)\n'%(block,flavor))
 
 			if not use_corrfunc:
-				if rank == 0: print 'Use series-expansion to compute derivative (may not be exact)'
+				if rank == 0: print('Use series-expansion to compute derivative (may not be exact)')
 				if block == 'BBBB':
 					## BB takes clee as unlensed weights (noiseless!)
 					cl_unlen_XX, cl_unlen_YY, cl_unlen_XY = lib_spectra.load_weights(cls_unlensed, 'clee', 0.0,
@@ -452,7 +452,7 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 
 				## Define range of ells, and distribute over procs.
 				n_tot = comm.size
-				l2range = range(lmin+rank,lmax+1,n_tot)
+				l2range = list(range(lmin+rank,lmax+1,n_tot))
 				l2dim = len(l2range)-1
 
 				## Load spins
@@ -465,7 +465,7 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 				## Reduce on the root
 				comm.Reduce([derivatives, MPI.DOUBLE],[dCMB_over_dcpp_tot[position_block], MPI.DOUBLE],op = MPI.SUM,root = 0)
 			else:
-				if rank == 0: print 'Use correlation functions to compute derivative'
+				if rank == 0: print('Use correlation functions to compute derivative')
 				if block == 'BBBB':
 					## BB takes clee as unlensed weights
 					## noiseless!
@@ -482,7 +482,7 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 
 				## Define range of ells, and distribute over procs.
 				n_tot = comm.size
-				l2range = range(lmin+rank,lmax+1,n_tot)
+				l2range = list(range(lmin+rank,lmax+1,n_tot))
 				l2dim = len(l2range)-1
 
 				## Compute.
@@ -523,7 +523,7 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 		flavor = 'cl%s%s'%(block[0].lower(),block[2].lower())
 		## Define range of ells, and distribute over procs.
 		n_tot = comm.size
-		l2range = range(lmin+rank,lmax+1,n_tot)
+		l2range = list(range(lmin+rank,lmax+1,n_tot))
 		l2dim = len(l2range)-1
 
 		## Compute
@@ -543,7 +543,7 @@ def analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,lmin=2,blocks=['TTTT'],
 		gaussvar_phiphi_nonoise = np.diag(gaussian_variance(cl11=clpp,ells=cls_lensed.ls))
 		for block in blocks:
 			index_block = blocks.index(block)
-			if rank == 0: print 'Updating block %s'%block
+			if rank == 0: print('Updating block %s'%block)
 
 			if block == 'TTTT':
 				index_derivative = names_dCMB_over_dcpp_tot.index('TTTT')
@@ -653,8 +653,8 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 		Barrier = comm.Barrier
 	except:
 		## No MPI
-		print 'Serial mode for the cross-covariances \n'
-		print 'I hope you are not computing too big objects :D Otherwise, use the parallelized version.'
+		print('Serial mode for the cross-covariances \n')
+		print('I hope you are not computing too big objects :D Otherwise, use the parallelized version.')
 		comm = None
 		rank = 0
 		n_tot = 1
@@ -697,13 +697,13 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 	## Load N0
 	file_manager_N0 = util.file_manager('N0', exp, spec='v1', lmax=lmax, force_recomputation=False, folder=folder_cache,rank=rank)
 	if file_manager_N0.FileExist is True:
-		if rank==0: print 'N0 part loaded from %s.pkl'%file_manager_N0.fn
+		if rank==0: print('N0 part loaded from %s.pkl'%file_manager_N0.fn)
 		N0, subblocks = file_manager_N0.data
 		for position_block,block in enumerate(blocks_for_N0):
 			index_N0 = subblocks.index(block[0:4])
 			N0_tot[position_block] = N0[index_N0]
 	else:
-		if rank ==0: print 'You need to compute N0 first!'
+		if rank ==0: print('You need to compute N0 first!')
 		sys.exit()
 
 
@@ -730,7 +730,7 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 			flavor = 'cl%s%s'%(block[0].lower(),block[1].lower())
 			index_derivative = blocks_for_phi_derivatives.index(block)
 
-			if rank==0: print 'Pre-compute derivatives: doing block (%s)\n'%(block)
+			if rank==0: print('Pre-compute derivatives: doing block (%s)\n'%(block))
 
 			## Lensed spectra used for the weights
 			## Load spins
@@ -801,7 +801,7 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 			weight_len_XY[1] = cl_len_XY[1][0:2*(lmax+EXTRA_MULTIPOLES_lensing)+1]
 
 			derivatives_tot_tmp = np.zeros((lmax+1+EXTRA_MULTIPOLES_lensing,lmax+1+EXTRA_MULTIPOLES_lensing))
-			l2range = range(lmin+rank,lmax+1+EXTRA_MULTIPOLES_lensing,n_tot)
+			l2range = list(range(lmin+rank,lmax+1+EXTRA_MULTIPOLES_lensing,n_tot))
 			l2dim = len(l2range)-1
 
 			## Computation of the derivatives
@@ -848,10 +848,10 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 	file_manager_CMBxCMB = util.file_manager('covariances_CMBxCMB', exp, spec='v1', lmax=lmax,
 								force_recomputation=False, folder=folder_cache,rank=rank)
 	if file_manager_CMBxCMB.FileExist is True:
-		if rank==0: print 'CMBxCMB part already computed. Loading from %s'%file_manager_CMBxCMB.fn
+		if rank==0: print('CMBxCMB part already computed. Loading from %s'%file_manager_CMBxCMB.fn)
 		cov_order0_CMBxCMB, cov_order1_CMBxCMB, cov_order2_CMBxCMB, blocks_CMBxCMB = file_manager_CMBxCMB.data
 	else:
-		if rank==0: print 'Computing CMBxCMB part'
+		if rank==0: print('Computing CMBxCMB part')
 		blocks_CMBxCMB = ['TTTT', 'EEEE', 'BBBB', 'EEBB', 'TTEE', 'TTBB', 'TETE', 'TTTE', 'EETE', 'TEBB']
 		cov_order0_CMBxCMB, cov_order1_CMBxCMB, cov_order2_CMBxCMB, blocks_CMBxCMB = analytic_covariances_CMBxCMB(cls_unlensed,cls_lensed,
 				lmin=lmin,blocks=blocks_CMBxCMB, noise_uK_arcmin=noise_uK_arcmin,TTcorr=TTcorr,
@@ -868,8 +868,8 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 			dCMB_over_dcpp_tot, blocks_for_CMB_derivatives = file_manager_derivatives_CMB.data
 	else:
 		if rank==0:
-			print 'You need to have the derivatives of the lensed CMB spectra wrt Cphiphi!'
-			print 'Have a look at analytic_covariances_CMBxCMB()'
+			print('You need to have the derivatives of the lensed CMB spectra wrt Cphiphi!')
+			print('Have a look at analytic_covariances_CMBxCMB()')
 			sys.exit()
 	Barrier()
 
@@ -896,12 +896,12 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 		file_manager_N0 = util.file_manager('N0', exp, spec='v1', lmax=lmax,
 							force_recomputation=False, folder=folder_cache,rank=rank)
 		if file_manager_N0.FileExist is True:
-			if rank==0: print 'Loading N0 from %s.pkl'%file_manager_N0.fn
+			if rank==0: print('Loading N0 from %s.pkl'%file_manager_N0.fn)
 			N0, names_for_N0 = file_manager_N0.data
 			## Form minimum variance for N0 and compute weights
 			minimum_variance_n0, weights_for_MV, names_for_weights = lib_spectra.compute_minimum_variance_weights(N0,names_for_N0)
 		else:
-			if rank==0: print 'You need N0!'
+			if rank==0: print('You need N0!')
 			sys.exit()
 
 		## Load trispB data
@@ -915,7 +915,7 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 			names_trispB.append(name_trispB)
 
 		for block in all_blocks:
-			print 'Compute block %s (%d/%d)'%(block, all_blocks.index(block)+1,len(all_blocks))
+			print('Compute block %s (%d/%d)'%(block, all_blocks.index(block)+1,len(all_blocks)))
 			## Combination of terms
 			names_noise, names_trispA, name_signal = combination_noise_signal_trispA(block)
 
@@ -993,7 +993,7 @@ def analytic_covariances_phixCMB(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 				## Load the pre-computed trispB matrix
 				fn = os.path.join(folder_cache,'trispB_v1_%d_%s_%s.pkl'%(lmax,exp,mat_name))
 				if not os.path.isfile(fn):
-					print 'No file %s'%fn
+					print('No file %s'%fn)
 					continue
 				mat = data_trispB[names_trispB.index(mat_name)]
 
@@ -1098,7 +1098,7 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 	clpp = cls_unlensed.clpp
 
 	## Range of multipoles for processors
-	l2range = range(lmin+rank,lmax+1,n_tot)
+	l2range = list(range(lmin+rank,lmax+1,n_tot))
 	l2dim = len(l2range)-1
 
 	#############################################################
@@ -1113,13 +1113,13 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 	N0_tot = np.array([np.zeros(lmax+1) for i in range(len(blocks_for_N0))])
 	file_manager_N0 = util.file_manager('N0', exp, spec='v1', lmax=lmax, force_recomputation=False, folder=folder_cache,rank=rank)
 	if file_manager_N0.FileExist is True:
-		if rank==0: print 'N0 part loaded from %s.pkl'%file_manager_N0.fn
+		if rank==0: print('N0 part loaded from %s.pkl'%file_manager_N0.fn)
 		N0, subblocks = file_manager_N0.data
 		for position_block,block in enumerate(blocks_for_N0):
 			index_N0 = subblocks.index(block[0:4])
 			N0_tot[position_block] = N0[index_N0]
 	else:
-		if rank ==0: print 'You need N0!'
+		if rank ==0: print('You need N0!')
 		sys.exit()
 
 	#############################################################
@@ -1139,7 +1139,7 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 			dN_over_dccmb_tot, blocks_for_derivatives = file_manager_derivatives.data
 	else:
 		if rank==0:
-			print 'You need to precompute the derivative of N^{(0)} wrt lensed CMB!'
+			print('You need to precompute the derivative of N^{(0)} wrt lensed CMB!')
 			sys.exit()
 	Barrier()
 
@@ -1149,11 +1149,11 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 	#############################################################
 	file_manager_phixCMB = util.file_manager('covariances_phixCMB', exp, spec='v1', lmax=lmax, force_recomputation=False, folder=folder_cache,rank=rank)
 	if file_manager_phixCMB.FileExist is True:
-		if rank==0: print 'phixCMB part already computed. Loading from %s'%file_manager_phixCMB.fn
+		if rank==0: print('phixCMB part already computed. Loading from %s'%file_manager_phixCMB.fn)
 		cov_phiCMB_MV, cov_phiCMB_MV_signal, cov_phiCMB_MV_noise, cov_phiCMB_MV_trispA, cov_phiCMB_MV_trispB, combinations_CMB = file_manager_phixCMB.data
 	else:
 		if rank==0:
-			print 'You need to precompute the cov(phi,CMB)!'
+			print('You need to precompute the cov(phi,CMB)!')
 			sys.exit()
 
 	#############################################################
@@ -1165,24 +1165,24 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 	if rank==0:
 		## Names of spectra
 		combinations = {'TT':0,'EE':1,'EB':2,'TE':3,'TB':4,'BB':5}
-		step = len(combinations.keys())
-		all_blocks = ['%s%s_%s%s'%(i,j,k,l) for i in combinations.keys() for j in combinations.keys() for k in combinations.keys() for l in combinations.keys()]
+		step = len(list(combinations.keys()))
+		all_blocks = ['%s%s_%s%s'%(i,j,k,l) for i in list(combinations.keys()) for j in list(combinations.keys()) for k in list(combinations.keys()) for l in list(combinations.keys())]
 
 		## Form N0 matrix
 		file_manager_N0 = util.file_manager('N0', exp, spec='v1', lmax=lmax, force_recomputation=False, folder=folder_cache,rank=rank)
 		if file_manager_N0.FileExist is True:
-			if rank==0: print 'Loading N0 from %s.pkl'%file_manager_N0.fn
+			if rank==0: print('Loading N0 from %s.pkl'%file_manager_N0.fn)
 			N0, names_for_N0 = file_manager_N0.data
 		else:
-			if rank==0: print 'You need N0!'
+			if rank==0: print('You need N0!')
 			sys.exit()
 
 		## Load N1 if necessary
 		if fn_n1 is None:
-			if rank == 0: print 'No N1 used'
+			if rank == 0: print('No N1 used')
 			n1_MV = np.zeros_like(cls_unlensed.ls)
 		else:
-			if rank == 0: print 'Loading N1 from %s'%fn_n1
+			if rank == 0: print('Loading N1 from %s'%fn_n1)
 			N1 = np.loadtxt(fn_n1).T
 			n1_MV = lib_spectra.compute_minimum_variance_N1(cls_unlensed.ls,None,N1,N0,names_for_N0)
 
@@ -1239,11 +1239,11 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 		#############################################################
 		## disconnected 8-pt (see Eq. 44 in the paper)
 		#############################################################
-		print 'Noise'
-		for c1 in combinations.keys(): ## XY
+		print('Noise')
+		for c1 in list(combinations.keys()): ## XY
 			XY_index = combinations[c1]
 			wXY_index = names_for_weights.index(c1)
-			for c2 in combinations.keys(): ## ZW
+			for c2 in list(combinations.keys()): ## ZW
 				ZW_index = combinations[c2]
 				wZW_index = names_for_weights.index(c2)
 
@@ -1260,7 +1260,7 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 					else:
 						continue
 
-					print der_name, CMB
+					print(der_name, CMB)
 
 					## Just the noise
 					cov_nonoise = cov_phiCMB_MV_noise[index_CMB].data
@@ -1273,11 +1273,11 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 		#############################################################
 		## Remaining 4-pt + 6-ptx2-pt function contribution (See eq. 42 in the paper)
 		#############################################################
-		print '6x2pt contribution'
-		for c1 in combinations.keys(): ## XY
+		print('6x2pt contribution')
+		for c1 in list(combinations.keys()): ## XY
 			XY_index = combinations[c1]
 			wXY_index = names_for_weights.index(c1)
-			for c2 in combinations.keys(): ## ZW
+			for c2 in list(combinations.keys()): ## ZW
 				ZW_index = combinations[c2]
 				wZW_index = names_for_weights.index(c2)
 				for CMB in [c1[0]+c2[0],c1[0]+c2[1],c1[1]+c2[0],c1[1]+c2[1]]:
@@ -1293,7 +1293,7 @@ def analytic_covariances_phixphi(cls_unlensed,cls_lensed,lmin=2,noise_uK_arcmin=
 					else:
 						continue
 
-					print der_name, CMB
+					print(der_name, CMB)
 
 					## Weights (XY * ZW)
 					vec1 = weights_for_MV[wXY_index] *  weights_for_MV[wZW_index]
@@ -1350,21 +1350,32 @@ def manual_correlation_matrix(mat, vec1, vec2, lstart=0,lstop=None):
 		* corrmat: 2D array, correlation matrix.
 
 	'''
+# 	if lstop is None:
+# 		lstop = len(vec1)
+
+# 	corrmat = np.zeros_like(mat)
+
+# 	code=r'''
+# 	int l1,l2;
+# 	for(l1 = lstart; l1 < lstop; l1++) {
+# 		for(l2 = lstart; l2 < lstop; l2++) {
+# 			corrmat(l1,l2) = mat(l1,l2) / sqrt(vec1(l1)*vec2(l2));
+# 		}
+# 	}
+# 	'''
+
+# 	inline(code,['mat','corrmat','vec1','vec2','lstart','lstop'], headers=["<math.h>"],type_converters = converters.blitz)
+
+# Rugved's python version here:
 	if lstop is None:
 		lstop = len(vec1)
 
 	corrmat = np.zeros_like(mat)
 
-	code=r'''
-	int l1,l2;
-	for(l1 = lstart; l1 < lstop; l1++) {
-		for(l2 = lstart; l2 < lstop; l2++) {
-			corrmat(l1,l2) = mat(l1,l2) / sqrt(vec1(l1)*vec2(l2));
-		}
-	}
-	'''
+	for l1 in range(lstart, lstop):
+		for l2 in range(lstart, lstop):
+			corrmat[l1,l2]=mat[l1,l2]/np.sqrt(vec1[l1]*vec2[l2])
 
-	inline(code,['mat','corrmat','vec1','vec2','lstart','lstop'], headers=["<math.h>"],type_converters = converters.blitz)
 
 	return corrmat
 
@@ -1378,17 +1389,26 @@ def simple_matvec_c(vec,mat,fortran_conv=0):
 	Output
 		* matvec: 2D array, the product vec_l2 * mat_l2l3
 	'''
+# 	size = len(vec)
+# 	matvec = np.zeros_like(mat)
+# 	code = r'''
+# 	int l2,l3;
+# 	for(l2 = 2; l2 < size; l2++) {
+# 		for(l3 = 2; l3 < size; l3++) {
+# 			matvec(l2,l3) = vec(l2)*mat(l2,l3);
+# 		}
+# 	}
+# 	'''
+# 	inline(code,['matvec','vec','mat','size','fortran_conv'], headers=["<math.h>"],type_converters = converters.blitz)
+    
+# Rugved's python version here:
 	size = len(vec)
 	matvec = np.zeros_like(mat)
-	code = r'''
-	int l2,l3;
-	for(l2 = 2; l2 < size; l2++) {
-		for(l3 = 2; l3 < size; l3++) {
-			matvec(l2,l3) = vec(l2)*mat(l2,l3);
-		}
-	}
-	'''
-	inline(code,['matvec','vec','mat','size','fortran_conv'], headers=["<math.h>"],type_converters = converters.blitz)
+	for l2 in range(2, size):
+		for l3 in range(2,size):
+			matvec[l2,l3]=vec[l2]*mat[l2,l3]
+    
+    
 	return matvec
 
 def vecmat(vec,mat,lstart=False):
@@ -1460,6 +1480,30 @@ def compute_covmat_cross_sims(lensingvec,CMBvec):
 	Output:
 		* covmat: 2D-array, cross-covariance matrix
 	'''
+# 	nsims = lensingvec.shape[0]
+# 	size_CMB  = CMBvec.shape[1]
+# 	size_lensing  = lensingvec.shape[1]
+
+# 	meanlensing = np.mean(lensingvec,axis=0)
+# 	meanCMB = np.mean(CMBvec,axis=0)
+# 	covmat_cross = np.zeros((size_lensing,size_CMB))
+
+# 	code=r'''
+# 	int s,i,j;
+# 	for(s = 0; s < nsims; s++) {
+# 		for(i = 0; i < size_lensing; i++) {
+# 			for(j = 0; j < size_CMB; j++) {
+# 				covmat_cross(i,j) = covmat_cross(i,j) + (lensingvec(s,i) - meanlensing(i))*(CMBvec(s,j) - meanCMB(j));
+# 			}
+# 		}
+# 	}
+# 	'''
+
+# 	inline(code,['covmat_cross','lensingvec','meanlensing','CMBvec','meanCMB','nsims','size_lensing','size_CMB'], headers=["<math.h>"],type_converters = converters.blitz)
+
+    
+    
+# Rugved's python version here:
 	nsims = lensingvec.shape[0]
 	size_CMB  = CMBvec.shape[1]
 	size_lensing  = lensingvec.shape[1]
@@ -1467,19 +1511,14 @@ def compute_covmat_cross_sims(lensingvec,CMBvec):
 	meanlensing = np.mean(lensingvec,axis=0)
 	meanCMB = np.mean(CMBvec,axis=0)
 	covmat_cross = np.zeros((size_lensing,size_CMB))
+	for s in range(nsims):
+		for i in range(size_lensing):
+			for j in range(size_CMB):
+				covmat_cross[i,j] = covmat_cross[i,j] + (lensingvec[s,i] - meanlensing[i])*(CMBvec[s,j] - meanCMB[j])
 
-	code=r'''
-	int s,i,j;
-	for(s = 0; s < nsims; s++) {
-		for(i = 0; i < size_lensing; i++) {
-			for(j = 0; j < size_CMB; j++) {
-				covmat_cross(i,j) = covmat_cross(i,j) + (lensingvec(s,i) - meanlensing(i))*(CMBvec(s,j) - meanCMB(j));
-			}
-		}
-	}
-	'''
 
-	inline(code,['covmat_cross','lensingvec','meanlensing','CMBvec','meanCMB','nsims','size_lensing','size_CMB'], headers=["<math.h>"],type_converters = converters.blitz)
+
+
 
 	return covmat_cross / (nsims-1)
 
@@ -1551,22 +1590,32 @@ class covmat(object):
 			* corrmat: 2D array, correlation matrix. If remove_diag is True, the diagonal elements are subtracted.
 
 		'''
+# 		covmat = self.data
+# 		size = self.size
+
+# 		corrmat = np.zeros_like(covmat)
+
+# 		code=r'''
+# 		int l1,l2;
+# 		for(l1 = lmin; l1 < size; l1++) {
+# 			for(l2 = lmin; l2 < size; l2++) {
+# 				corrmat(l1,l2) = covmat(l1,l2) / sqrt(covmat(l1,l1)*covmat(l2,l2));
+# 			}
+# 		}
+# 		'''
+
+# 		inline(code,['covmat','corrmat','size','lmin'], headers=["<math.h>"],type_converters = converters.blitz)
+        
+# Rugved's python code here:
 		covmat = self.data
 		size = self.size
 
 		corrmat = np.zeros_like(covmat)
-
-		code=r'''
-		int l1,l2;
-		for(l1 = lmin; l1 < size; l1++) {
-			for(l2 = lmin; l2 < size; l2++) {
-				corrmat(l1,l2) = covmat(l1,l2) / sqrt(covmat(l1,l1)*covmat(l2,l2));
-			}
-		}
-		'''
-
-		inline(code,['covmat','corrmat','size','lmin'], headers=["<math.h>"],type_converters = converters.blitz)
-
+		for l1 in range(lmin,size):
+			for l2 in range(lmin, size):
+				corrmat[l1,l2] = covmat[l1,l2] / np.sqrt(covmat[l1,l1]*covmat[l2,l2])
+        
+        
 		if remove_diag:
 			toremove = np.eye(size)
 			toremove[0:lmin]=0.0
@@ -1587,22 +1636,33 @@ class covmat(object):
 			* corrmat: 2D array, cross-correlation matrix.
 
 		'''
+# 		covmat = self.data
+# 		size = self.size
+
+# 		corrmat = np.zeros_like(covmat)
+
+# 		code=r'''
+# 		int l1,l2;
+# 		for(l1 = lmin; l1 < size; l1++) {
+# 			for(l2 = lmin; l2 < size; l2++) {
+# 				corrmat(l1,l2) = covmat(l1,l2) / sqrt(vec1(l1)*vec2(l2));
+# 			}
+# 		}
+# 		'''
+
+# 		inline(code,['covmat','corrmat','vec1','vec2','size','lmin'], headers=["<math.h>"],type_converters = converters.blitz)
+
+        
+#Rugved's python code:        
 		covmat = self.data
 		size = self.size
 
 		corrmat = np.zeros_like(covmat)
-
-		code=r'''
-		int l1,l2;
-		for(l1 = lmin; l1 < size; l1++) {
-			for(l2 = lmin; l2 < size; l2++) {
-				corrmat(l1,l2) = covmat(l1,l2) / sqrt(vec1(l1)*vec2(l2));
-			}
-		}
-		'''
-
-		inline(code,['covmat','corrmat','vec1','vec2','size','lmin'], headers=["<math.h>"],type_converters = converters.blitz)
-
+		for l1 in range(lmin,size):
+			for l2 in range(lmin,size):
+				corrmat[l1,l2] = covmat[l1,l2] / np.sqrt(vec1[l1]*vec2[l2])
+        
+        
 		return corrmat
 
 	def svd_decomposition(self,mat=None,transpose=False):
@@ -1670,7 +1730,7 @@ class covmatbinned(object):
 
 		if lbins2 is not None:
 			if lboundaries2 is None:
-				print 'You have to specify boudaries for the 2nd dimension'
+				print('You have to specify boudaries for the 2nd dimension')
 				sys.exit()
 			self.lbins1 = lbins
 			self.lbins2 = lbins2
@@ -1722,26 +1782,42 @@ class covmatbinned(object):
 			* corrmat: 2D array, correlation matrix. If remove_diag is True, the diagonal elements are subtracted.
 
 		'''
+# 		covmat = self.data
+# 		size1 = self.size1
+# 		size2 = self.size2
+# 		if size1 != size2:
+# 			print 'Matrix has to be square!'
+# 			sys.exit()
+
+# 		corrmat = np.zeros_like(covmat)
+
+# 		code=r'''
+# 		int l1,l2;
+# 		for(l1 = startbin; l1 < size1; l1++) {
+# 			for(l2 = startbin; l2 < size2; l2++) {
+# 				corrmat(l1,l2) = covmat(l1,l2) / sqrt(covmat(l1,l1)*covmat(l2,l2));
+# 			}
+# 		}
+# 		'''
+
+# 		inline(code,['covmat','corrmat','size1','size2','startbin'], headers=["<math.h>"],type_converters = converters.blitz)
+
+#Rugved's pytohn code:
 		covmat = self.data
 		size1 = self.size1
 		size2 = self.size2
 		if size1 != size2:
-			print 'Matrix has to be square!'
+			print('Matrix has to be square!')
 			sys.exit()
 
 		corrmat = np.zeros_like(covmat)
-
-		code=r'''
-		int l1,l2;
-		for(l1 = startbin; l1 < size1; l1++) {
-			for(l2 = startbin; l2 < size2; l2++) {
-				corrmat(l1,l2) = covmat(l1,l2) / sqrt(covmat(l1,l1)*covmat(l2,l2));
-			}
-		}
-		'''
-
-		inline(code,['covmat','corrmat','size1','size2','startbin'], headers=["<math.h>"],type_converters = converters.blitz)
-
+		for l1 in range(startb,size1):
+			for l2 in range(startbin,size2):
+				corrmat[l1,l2] = covmat[l1,l2] / np.sqrt(covmat[l1,l1]*covmat[l2,l2])
+        
+        
+        
+        
 		if remove_diag:
 			toremove = np.eye(size1)
 			# toremove[0:lmin]=0.0
@@ -1762,23 +1838,35 @@ class covmatbinned(object):
 			* corrmat: 2D array, cross-correlation matrix.
 
 		'''
+# 		covmat = self.data
+# 		size1 = self.size1
+# 		size2 = self.size2
+
+# 		corrmat = np.zeros_like(covmat)
+
+# 		code=r'''
+# 		int l1,l2;
+# 		for(l1 = startbin; l1 < size1; l1++) {
+# 			for(l2 = startbin; l2 < size2; l2++) {
+# 				corrmat(l1,l2) = covmat(l1,l2) / sqrt(vec1(l1)*vec2(l2));
+# 			}
+# 		}
+# 		'''
+
+# 		inline(code,['covmat','corrmat','vec1','vec2','size1','size2','startbin'], headers=["<math.h>"],type_converters = converters.blitz)
+
+#Rugved's python code:
+        
 		covmat = self.data
 		size1 = self.size1
 		size2 = self.size2
 
 		corrmat = np.zeros_like(covmat)
+		for l1 in range(startbin,size1):
+			for l2 in range(startbin,size2):
+				corrmat[l1,l2] = covmat[l1,l2] / np.sqrt(vec1[l1]*vec2[l2])
 
-		code=r'''
-		int l1,l2;
-		for(l1 = startbin; l1 < size1; l1++) {
-			for(l2 = startbin; l2 < size2; l2++) {
-				corrmat(l1,l2) = covmat(l1,l2) / sqrt(vec1(l1)*vec2(l2));
-			}
-		}
-		'''
-
-		inline(code,['covmat','corrmat','vec1','vec2','size1','size2','startbin'], headers=["<math.h>"],type_converters = converters.blitz)
-
+        
 		return corrmat
 
 	def svd_decomposition(self,mat=None,transpose=False):

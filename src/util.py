@@ -7,9 +7,10 @@
 # See 1611.01446
 #########################
 import glob,sys,os
-import cPickle as pickle
+import pickle as pickle
 import errno
 import numpy as np
+from functools import reduce
 
 ########################################################################
 # Class to manipulate binned quantities
@@ -29,9 +30,9 @@ class binner4cov():
 		"""
 		if bins is None:
 			if step > lmin:
-				self.bin_boundaries_all = np.array([lmin] + range(step,lmax,step) + [lmax])
+				self.bin_boundaries_all = np.array([lmin] + list(range(step,lmax,step)) + [lmax])
 			else:
-				self.bin_boundaries_all = np.array([lmin] + range(step+lmin,lmax,step) + [lmax])
+				self.bin_boundaries_all = np.array([lmin] + list(range(step+lmin,lmax,step)) + [lmax])
 			self.bin_boundaries = np.array([[a,b] for a,b in zip(self.bin_boundaries_all[0:-1],self.bin_boundaries_all[1:])])
 			self.bin_centers = np.mean(self.bin_boundaries,axis=1)
 			self.bin_size = np.diff(self.bin_boundaries_all)
@@ -49,7 +50,7 @@ class binner4cov():
 				self.alpha_x = 1.0
 				self.alpha_y = 2.0
 		else:
-			print 'Not yet available'
+			print('Not yet available')
 			sys.exit()
 
 	def P_operator(self,alpha):
@@ -106,7 +107,7 @@ class binner():
 		ret = np.zeros(self.Nbins())
 		if weights is None: weights = np.ones(len(x))
 		assert (len(x) == len(y) and len(x) == len(weights)), "inconsistent inputs"
-		for i, bin_l, bin_r in zip(xrange(self.Nbins()), self.bins_l, self.bins_r):
+		for i, bin_l, bin_r in zip(range(self.Nbins()), self.bins_l, self.bins_r):
 			idc = np.array(np.where((x >= bin_l) & (x <= bin_r)))
 			if idc.size > 0.: ret[i] = np.sum(y[idc] * weights[idc]) / idc.size
 		return ret
@@ -135,7 +136,7 @@ def binvec(vec, ell, lbins, lmax,t=lambda l : 1.):
 	return spec
 
 def rebin(cl,old_bin_centers,new_bin_boundaries,lmax,weight=1.0):
-	interp_cl = np.interp(range(0,lmax+1),old_bin_centers,cl)
+	interp_cl = np.interp(list(range(0,lmax+1)),old_bin_centers,cl)
 	return bin_spectra_theory(interp_cl,new_bin_boundaries,weight=weight)
 
 def bin_spectra(sl,cl,lbins_boundaries,cl_transf=None,t=lambda l : 1.):
@@ -191,7 +192,7 @@ def linear_binning(lmin, lmax, nbins):
 def Pbinning(bins,ell):
 	P=np.zeros((len(bins)-1,len(ell)))
 	shift=ell[0]
-	minmax=zip(bins[0:-1],bins[1:])
+	minmax=list(zip(bins[0:-1],bins[1:]))
 	for i in range(len(bins)-1):
 		for l in range(int(minmax[i][0]),int(minmax[i][1])):
 			P[i][l-shift]=1./(2.*np.pi)*float(l)*(float(l)+1)/float(minmax[i][1]-minmax[i][0])
@@ -200,7 +201,7 @@ def Pbinning(bins,ell):
 def Qbinning(bins,ell):
 	Q=np.zeros((len(ell),len(bins)-1))
 	shift=ell[0]
-	minmax=zip(bins[0:-1],bins[1:])
+	minmax=list(zip(bins[0:-1],bins[1:]))
 	for i in range(len(bins)-1):
 		for l in range(int(minmax[i][0]),int(minmax[i][1])):
 			Q[l-shift][i]=2.*np.pi/float(l*(l+1))
@@ -289,10 +290,10 @@ class file_manager(object):
 		'''
 		fn = self.fn + '.pkl'
 		if os.path.isfile(fn):
-			if self.rank==0: print 'Data stored on the disk'
+			if self.rank==0: print('Data stored on the disk')
 			return True
 		else:
-			if self.rank==0: print 'Data not stored on the disk'
+			if self.rank==0: print('Data not stored on the disk')
 			return False
 
 	def load_data_from_disk(self,fn=None):
@@ -304,11 +305,11 @@ class file_manager(object):
 			* array: 1D or 2D-array, the data stored in the file (vector or matrix)
 		'''
 		if fn is not None:
-			if self.rank==0: print 'Loading external data',fn
+			if self.rank==0: print('Loading external data',fn)
 			data = pickle_load(fn)
 			array = data['data']
 		elif self.FileExist is False:
-			if self.rank==0: print 'Cannot load the data'
+			if self.rank==0: print('Cannot load the data')
 			array = []
 		else:
 			fn = self.fn + '.pkl'
@@ -336,7 +337,7 @@ class file_manager(object):
 			fn = self.fn
 			fn += '.pkl'
 		pickle_save(data, fn)
-		if self.rank==0: print 'data saved on disk at', fn
+		if self.rank==0: print('data saved on disk at', fn)
 
 	def save_figure_on_disk(self,plot_folder,extension='.pdf',name=None):
 		'''
@@ -353,7 +354,7 @@ class file_manager(object):
 		import pylab as pl
 		pl.savefig(fn)
 		pl.clf()
-		if self.rank==0: print 'figure saved on disk at', fn
+		if self.rank==0: print('figure saved on disk at', fn)
 
 ########################################################################
 # Misc

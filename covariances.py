@@ -70,7 +70,7 @@ def covariances_main(args):
 		rank = comm.rank
 		barrier = comm.barrier
 		if DEBUG: 
-			print "Hello! I'm rank %d from %d running in total..." % (comm.rank, comm.size)
+			print("Hello! I'm rank %d from %d running in total..." % (comm.rank, comm.size))
 	else:
 		MPI = None
 		rank = 0
@@ -81,16 +81,16 @@ def covariances_main(args):
 	noise_uK_arcmin, fwhm_arcmin, lmin, lmax, TTcorr, folder_cache = misc.get_exp_configuration(exp)
 
 	if rank == 0:
-		if DEBUG: print args
-		print '+-----------------------------+'
-		print '+ Exp:			   ', exp
-		print '+ Noise (uK.arcmin):        ', noise_uK_arcmin
-		print '+ TTcorr:                   ', TTcorr
-		print '+ FWHM (arcmin):	           ', fwhm_arcmin
-		print '+ lmin:			   ', lmin
-		print '+ lmax:			   ', lmax
-		print '+ MODE:			   ', MODE
-		print '+-----------------------------+'
+		if DEBUG: print(args)
+		print('+-----------------------------+')
+		print('+ Exp:			   ', exp)
+		print('+ Noise (uK.arcmin):        ', noise_uK_arcmin)
+		print('+ TTcorr:                   ', TTcorr)
+		print('+ FWHM (arcmin):	           ', fwhm_arcmin)
+		print('+ lmin:			   ', lmin)
+		print('+ lmax:			   ', lmax)
+		print('+ MODE:			   ', MODE)
+		print('+-----------------------------+')
 
 	## Initialization of spectra
 	cls_unlensed = lib_spectra.get_camb_cls(fname=args.input_unlensed_spectra, lmax=lmax)
@@ -122,7 +122,7 @@ def covariances_main(args):
 
 		if file_manager.FileExist is True:
 			if rank == 0:
-				print 'Already computed in %s/'%folder_cache
+				print('Already computed in %s/'%folder_cache)
 			sys.exit()
 		else:
 			N0, blocks = lib_spectra.compute_N0_XYWZ(
@@ -144,9 +144,9 @@ def covariances_main(args):
 		try:
 			import LensingBiases as LB
 		except:
-			print 'You need to install the lensingbiases package'
-			print 'to compute N1. See '
-			print 'https://github.com/JulienPeloton/lensingbiases'
+			print('You need to install the lensingbiases package')
+			print('to compute N1. See ')
+			print('https://github.com/JulienPeloton/lensingbiases')
 
 		## Initialization of file manager
 		file_manager = util.file_manager(
@@ -219,7 +219,7 @@ def covariances_main(args):
 
 		if file_manager.FileExist is True:
 			if rank == 0:
-				print 'Already computed in %s/' % folder_cache
+				print('Already computed in %s/' % folder_cache)
 			sys.exit()
 		else:
 			cov_order0_tot, cov_order1_tot, cov_order2_tot, junk = lib_covariances.analytic_covariances_CMBxCMB(
@@ -254,7 +254,7 @@ def covariances_main(args):
 
 		if file_manager.FileExist is True:
 			if rank == 0:
-				print 'Already computed in %s/'%folder_cache
+				print('Already computed in %s/'%folder_cache)
 			sys.exit()
 		else:
 			cov_MV, cov_MV_signal, cov_MV_noise, cov_MV_trispA, cov_MV_trispB, combinations_CMB = \
@@ -291,7 +291,7 @@ def covariances_main(args):
 
 		if file_manager.FileExist is True:
 			if rank == 0:
-				print 'Already computed in %s/'%folder_cache
+				print('Already computed in %s/'%folder_cache)
 			sys.exit()
 		else:
 			cov_MV, cov_RDN0_MV, blocks = lib_covariances.analytic_covariances_phixphi(
