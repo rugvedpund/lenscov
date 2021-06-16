@@ -2,7 +2,7 @@
 #SBATCH -p debug
 #SBATCH -N 6
 #SBATCH -t 00:30:00
-#SBATCH -J CMBlensingcori
+#SBATCH -J N0
 #SBATCH --constraint=haswell
 
 
@@ -17,7 +17,7 @@ lensed_file=additional_files/planck_lensing_wp_highL_bestFit_20130627_lensedCls.
 runmode=N0
 
 ## Choice between Planck, Core++, CMB-S4, and Ideal
-exp=CMB-S4_lmax5000
+exp=CMB-S4
 
 if [ "${runmode}" == "N1" ];
 	then

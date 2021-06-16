@@ -61,6 +61,18 @@ def get_exp_configuration(exp='_test_'):
 		noise_uK_arcmin = 1.5
 		fwhm_arcmin = 3.0
 		TTcorr = False
+	elif exp == 'CMB-S4_lmax5000':
+		'''
+		From Jojo article (1509.06770) @ 150 GHz
+		Comment: I find the lmax a bit low, however if
+		we take into account that the main contribution at high ell is
+		the point source contribution, foregrounds etc. it sounds somehow ok.
+		'''
+		lmin = 20
+		lmax = 5000
+		noise_uK_arcmin = 1.5
+		fwhm_arcmin = 3.0
+		TTcorr = False        
 	elif exp == 'CMB-S4_noisecorr':
 		'''
 		Same as above, but with a correlated noise component for the noise.
@@ -70,6 +82,18 @@ def get_exp_configuration(exp='_test_'):
 		noise_uK_arcmin = 1.5
 		fwhm_arcmin = 3.0
 		TTcorr = 1000
+	elif exp == 'CMB-S4_v2':
+		'''
+		From Jojo article (1509.06770) @ 150 GHz
+		Comment: I find the lmax a bit low, however if
+		we take into account that the main contribution at high ell is
+		the point source contribution, foregrounds etc. it sounds somehow ok.
+		'''
+		lmin = 20
+		lmax = 1000
+		noise_uK_arcmin = 1.5
+		fwhm_arcmin = 3.0
+		TTcorr = False        
 
 	return noise_uK_arcmin, fwhm_arcmin, lmin, lmax, TTcorr, folder_cache
 

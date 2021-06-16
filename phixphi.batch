@@ -2,7 +2,7 @@
 #SBATCH -p debug
 #SBATCH -N 6
 #SBATCH -t 00:30:00
-#SBATCH -J CMBlensingcori
+#SBATCH -J phixphi
 #SBATCH --constraint=haswell
 
 
@@ -14,10 +14,10 @@ unlensed_file=additional_files/planck_lensing_wp_highL_bestFit_20130627_lenspote
 lensed_file=additional_files/planck_lensing_wp_highL_bestFit_20130627_lensedCls.dat
 
 ## Runmode: What do you want to compute?
-runmode=N0
+runmode=covariances_phixphi
 
 ## Choice between Planck, Core++, CMB-S4, and Ideal
-exp=CMB-S4_lmax5000
+exp=CMB-S4
 
 if [ "${runmode}" == "N1" ];
 	then

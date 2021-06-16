@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #SBATCH -p debug
-#SBATCH -N 6
+#SBATCH -N 8
 #SBATCH -t 00:30:00
-#SBATCH -J CMBlensingcori
+#SBATCH -J phixCMB
 #SBATCH --constraint=haswell
 
 
@@ -14,10 +14,10 @@ unlensed_file=additional_files/planck_lensing_wp_highL_bestFit_20130627_lenspote
 lensed_file=additional_files/planck_lensing_wp_highL_bestFit_20130627_lensedCls.dat
 
 ## Runmode: What do you want to compute?
-runmode=N0
+runmode=covariances_phixCMB
 
 ## Choice between Planck, Core++, CMB-S4, and Ideal
-exp=CMB-S4_lmax5000
+exp=CMB-S4
 
 if [ "${runmode}" == "N1" ];
 	then
@@ -30,4 +30,4 @@ fi
 
 ## Make sure you have python-mpi, optimized for parallel computing at NERSC
 ## Launch script with sbatch
-time srun -n 64 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode $runmode --mpi
+time srun -n 64 -c 8 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode $runmode --mpi

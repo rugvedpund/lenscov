@@ -1,0 +1,34 @@
+#!/bin/bash -l
+#SBATCH -p debug
+#SBATCH -N 2
+#SBATCH -t 00:30:00
+#SBATCH -J CMB-S4_v2
+#SBATCH --constraint=haswell
+
+source $HOME/.bashrc.ext
+
+
+main_script=covariances.py
+
+## Input CAMB files
+unlensed_file=additional_files/Bmodes_params_lowAcc_lenspotentialCls.dat
+lensed_file=additional_files/Bmodes_params_lowAcc_lensedCls.dat
+
+
+## Choice between Planck, Core++, CMB-S4, and Ideal
+exp=CMB-S4_v2
+
+
+## Make sure you have python-mpi, optimized for parallel computing at NERSC
+## Launch script with sbatch
+python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N1
+
+srun -n 16 -c 4 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode N0 --mpi
+
+srun -n 16 -c 4 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_CMBxCMB --mpi 
+
+srun -n 16 -c 4 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode trispB --mpi
+
+srun -n 16 -c 4 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixCMB --mpi
+
+srun -n 16 -c 4 python ${main_script} -input_unlensed_spectra ${unlensed_file} -input_lensed_spectra ${lensed_file} -exp $exp -runmode covariances_phixphi --mpi

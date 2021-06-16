@@ -502,8 +502,8 @@ class camb_clfile(object):
 		## interpolate values beyond 10000
 		if 3*lmax > 10000:
 			print('Interpolate high ell values for spectra')
-			lmax_file = tarray[-1, 0]
-			tarray_tmp = np.zeros((ncol,lmax_file-lmin+1))
+			lmax_file = int(tarray[-1, 0])
+			tarray_tmp = np.zeros((ncol,int(lmax_file-lmin+1)))
 			full_lrange = list(range(int(lmin),int(lmax_file+1)))
 			tarray = tarray.T ## transpose to ease the computation
 			for i in range(ncol):
