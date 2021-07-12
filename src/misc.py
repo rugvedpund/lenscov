@@ -94,7 +94,20 @@ def get_exp_configuration(exp='_test_'):
 		noise_uK_arcmin = 1.5
 		fwhm_arcmin = 3.0
 		TTcorr = False        
-
+	elif exp == 'CMB-S4_v3':
+		'''
+		From Jojo article (1509.06770) @ 150 GHz
+		Comment: I find the lmax a bit low, however if
+		we take into account that the main contribution at high ell is
+		the point source contribution, foregrounds etc. it sounds somehow ok.
+		'''
+		lmin = 2
+		lmax = 5000
+		noise_uK_arcmin = 1.0
+		fwhm_arcmin = 1.0
+		TTcorr = False       
+        
+        
 	return noise_uK_arcmin, fwhm_arcmin, lmin, lmax, TTcorr, folder_cache
 
 def add_text_imshow(ax,text,array):
