@@ -61,17 +61,17 @@ def get_exp_configuration(exp='_test_'):
 		noise_uK_arcmin = 1.5
 		fwhm_arcmin = 3.0
 		TTcorr = False
-	elif exp == 'CMB-S4_lmax5000':
+	elif exp == 'CMB-S4_lmax30000':
 		'''
 		From Jojo article (1509.06770) @ 150 GHz
 		Comment: I find the lmax a bit low, however if
 		we take into account that the main contribution at high ell is
 		the point source contribution, foregrounds etc. it sounds somehow ok.
 		'''
-		lmin = 20
-		lmax = 5000
-		noise_uK_arcmin = 1.5
-		fwhm_arcmin = 3.0
+		lmin = 2
+		lmax = 30000
+		noise_uK_arcmin = 1.0
+		fwhm_arcmin = 1.0
 		TTcorr = False        
 	elif exp == 'CMB-S4_noisecorr':
 		'''
@@ -89,12 +89,48 @@ def get_exp_configuration(exp='_test_'):
 		we take into account that the main contribution at high ell is
 		the point source contribution, foregrounds etc. it sounds somehow ok.
 		'''
-		lmin = 20
-		lmax = 1000
-		noise_uK_arcmin = 1.5
-		fwhm_arcmin = 3.0
-		TTcorr = False        
-
+		lmin = 2
+		lmax = 5000
+		noise_uK_arcmin = 1.0
+		fwhm_arcmin = 1.0
+		TTcorr = False
+	elif exp == 'CMB-S4_0.5uK':
+		'''
+		From Jojo article (1509.06770) @ 150 GHz
+		Comment: I find the lmax a bit low, however if
+		we take into account that the main contribution at high ell is
+		the point source contribution, foregrounds etc. it sounds somehow ok.
+		'''
+		lmin = 2
+		lmax = 6000
+		noise_uK_arcmin = 0.5
+		fwhm_arcmin = 1.0
+		TTcorr = False    
+	elif exp == 'CMB-S4_1.0uK':
+		'''
+		From Jojo article (1509.06770) @ 150 GHz
+		Comment: I find the lmax a bit low, however if
+		we take into account that the main contribution at high ell is
+		the point source contribution, foregrounds etc. it sounds somehow ok.
+		'''
+		lmin = 2
+		lmax = 6000
+		noise_uK_arcmin = 1.0
+		fwhm_arcmin = 1.0
+		TTcorr = False   
+	elif exp == 'CMB-S4_2.0uK':
+		'''
+		From Jojo article (1509.06770) @ 150 GHz
+		Comment: I find the lmax a bit low, however if
+		we take into account that the main contribution at high ell is
+		the point source contribution, foregrounds etc. it sounds somehow ok.
+		'''
+		lmin = 2
+		lmax = 6000
+		noise_uK_arcmin = 2.0
+		fwhm_arcmin = 1.0
+		TTcorr = False         
+        
 	return noise_uK_arcmin, fwhm_arcmin, lmin, lmax, TTcorr, folder_cache
 
 def add_text_imshow(ax,text,array):
