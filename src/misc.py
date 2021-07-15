@@ -61,17 +61,17 @@ def get_exp_configuration(exp='_test_'):
 		noise_uK_arcmin = 1.5
 		fwhm_arcmin = 3.0
 		TTcorr = False
-	elif exp == 'CMB-S4_lmax5000':
+	elif exp == 'CMB-S4_lmax30000':
 		'''
 		From Jojo article (1509.06770) @ 150 GHz
 		Comment: I find the lmax a bit low, however if
 		we take into account that the main contribution at high ell is
 		the point source contribution, foregrounds etc. it sounds somehow ok.
 		'''
-		lmin = 20
-		lmax = 5000
-		noise_uK_arcmin = 1.5
-		fwhm_arcmin = 3.0
+		lmin = 2
+		lmax = 30000
+		noise_uK_arcmin = 1.0
+		fwhm_arcmin = 1.0
 		TTcorr = False        
 	elif exp == 'CMB-S4_noisecorr':
 		'''
@@ -89,12 +89,21 @@ def get_exp_configuration(exp='_test_'):
 		we take into account that the main contribution at high ell is
 		the point source contribution, foregrounds etc. it sounds somehow ok.
 		'''
+<<<<<<< HEAD
 		lmin = 20
 		lmax = 1000
 		noise_uK_arcmin = 1.5
 		fwhm_arcmin = 3.0
 		TTcorr = False        
 	elif exp == 'CMB-S4_v3':
+=======
+		lmin = 2
+		lmax = 5000
+		noise_uK_arcmin = 1.0
+		fwhm_arcmin = 1.0
+		TTcorr = False
+	elif exp == 'CMB-S4_0.5uK':
+>>>>>>> 325e16a74aeea7cb1e478558d74425981b3a8d20
 		'''
 		From Jojo article (1509.06770) @ 150 GHz
 		Comment: I find the lmax a bit low, however if
@@ -102,11 +111,42 @@ def get_exp_configuration(exp='_test_'):
 		the point source contribution, foregrounds etc. it sounds somehow ok.
 		'''
 		lmin = 2
+<<<<<<< HEAD
 		lmax = 5000
 		noise_uK_arcmin = 1.0
 		fwhm_arcmin = 1.0
 		TTcorr = False       
         
+=======
+		lmax = 6000
+		noise_uK_arcmin = 0.5
+		fwhm_arcmin = 1.0
+		TTcorr = False    
+	elif exp == 'CMB-S4_1.0uK':
+		'''
+		From Jojo article (1509.06770) @ 150 GHz
+		Comment: I find the lmax a bit low, however if
+		we take into account that the main contribution at high ell is
+		the point source contribution, foregrounds etc. it sounds somehow ok.
+		'''
+		lmin = 2
+		lmax = 6000
+		noise_uK_arcmin = 1.0
+		fwhm_arcmin = 1.0
+		TTcorr = False   
+	elif exp == 'CMB-S4_2.0uK':
+		'''
+		From Jojo article (1509.06770) @ 150 GHz
+		Comment: I find the lmax a bit low, however if
+		we take into account that the main contribution at high ell is
+		the point source contribution, foregrounds etc. it sounds somehow ok.
+		'''
+		lmin = 2
+		lmax = 6000
+		noise_uK_arcmin = 2.0
+		fwhm_arcmin = 1.0
+		TTcorr = False         
+>>>>>>> 325e16a74aeea7cb1e478558d74425981b3a8d20
         
 	return noise_uK_arcmin, fwhm_arcmin, lmin, lmax, TTcorr, folder_cache
 

@@ -8,3 +8,4 @@ src/*.so
 src/*.o
 build/
 .ipynb_checkpoints/
+N1/*
